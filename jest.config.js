@@ -19,4 +19,13 @@ module.exports = {
     '!**/node_modules/**',
     '!**/dist/**',
   ],
+  coverageThreshold: {
+    global: {
+      lines: 80,
+      functions: 80,
+      branches: 80,
+      statements: 80,
+    },
+  },
+  coverageReporters: ['text', 'json-summary', 'lcov'],
 };
