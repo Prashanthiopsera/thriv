@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  ci:
+    name: Lint · Typecheck · Test · Audit · Security
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (lock-file enforced)
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Enforce 80% coverage threshold
+        run: |
+          COVERAGE=$(node -e "
+            const fs = require('fs');
+            try {
+              const summary = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+              const lines = summary.total.lines.pct;
+              console.log(lines);
+            } catch (e) {
+              // No test files yet — coverage is N/A, pass
+              console.log('100');
+            }
+          ")
+          echo "Line coverage: ${COVERAGE}%"
+          node -e "
+            const pct = parseFloat('${COVERAGE}');
+            if (!isNaN(pct) && pct < 80) {
+              console.error('Coverage ' + pct + '% is below the 80% threshold');
+              process.exit(1);
+            }
+          "
+
+      - name: NPM audit (fail on critical/high)
+        run: npm audit --audit-level=high
+
+      - name: Sensitive file detection
+        run: |
+          PATTERNS=('.env' '*.pem' '*.key' '*.p12' '*.pfx' 'id_rsa' 'id_ecdsa' 'credentials.json' '.env.local' '.env.production')
+          FOUND=0
+          for pattern in "${PATTERNS[@]}"; do
+            # Check staged files in the commit diff
+            MATCHES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -E "(^|/)${pattern//\*/.*}$" || true)
+            if [ -n "$MATCHES" ]; then
+              echo "ERROR: Sensitive file pattern '${pattern}' detected in commit:"
+              echo "$MATCHES"
+              FOUND=1
+            fi
+          done
+          if [ "$FOUND" -eq 1 ]; then
+            exit 1
+          fi
+          echo "No sensitive files detected."

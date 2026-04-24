@@ -11,7 +11,9 @@
     "build:packages": "npm run build -w packages/auth -w packages/rbac -w packages/integration-hub -w packages/metrics -w packages/dashboard",
     "build:apps": "npm run build -w apps/backend && npm run build -w apps/frontend",
     "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit -p tsconfig.json && npm run typecheck -w apps/frontend --if-present",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "dev:backend": "npm run dev -w apps/backend",
     "dev:frontend": "npm run dev -w apps/frontend"
   },
