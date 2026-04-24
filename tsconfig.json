@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@refactory/auth": ["packages/auth/src/index.ts"],
+      "@refactory/rbac": ["packages/rbac/src/index.ts"],
+      "@refactory/integration-hub": ["packages/integration-hub/src/index.ts"],
+      "@refactory/metrics": ["packages/metrics/src/index.ts"],
+      "@refactory/dashboard": ["packages/dashboard/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts", "apps/frontend"]
+}
